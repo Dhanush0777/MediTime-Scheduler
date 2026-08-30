@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>About & Medical Safety – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold"><i class="fa-solid fa-notes-medical text-primary me-2"></i> About MediTime</h1>
+            <p class="lead text-muted">Smart Medical Prescription Time Table & Sound Reminder System</p>
+        </div>
+
+        <!-- Medical Disclaimer Card -->
+        <div class="card border-warning bg-warning-subtle p-4 mb-4 rounded-3 shadow-sm">
+            <div class="d-flex align-items-start">
+                <div class="text-warning-emphasis fs-1 me-3">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold text-warning-emphasis">Important Medical Safety Disclaimer</h4>
+                    <p class="mb-0 text-dark">
+                        This application is a <strong>prescription scheduling and reminder system</strong>, not a medical decision-making system.
+                        Medication schedules shown by this application are strictly based on the entered prescription. The system does not diagnose diseases, recommend medications, or alter dosages without explicit physician instructions.
+                        Always consult a qualified healthcare provider before initiating, modifying, or terminating any drug therapy.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="card h-100 p-4">
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-bullseye me-2"></i> System Objectives</h5>
+                    <p class="text-muted">
+                        Non-adherence to prescribed medication schedules is one of the leading causes of preventable medical complications and treatment failures globally.
+                    </p>
+                    <ul class="text-muted small space-y-2">
+                        <li class="mb-2"><strong>Automated Conversion:</strong> Translates doctor prescriptions directly into daily chronological timetables.</li>
+                        <li class="mb-2"><strong>Audible Alarms:</strong> Synthesizes real-time browser audio notifications via the Web Audio API without depending on flaky external audio assets.</li>
+                        <li class="mb-2"><strong>Patient Accountability:</strong> Tracks exact taken timestamps, snooze intervals (5, 10, 15 min), and missed doses.</li>
+                        <li class="mb-2"><strong>Adherence Tracking:</strong> Calculates daily and longitudinal compliance rates: <code>Adherence % = (Taken / Total Scheduled) × 100</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 p-4">
+                    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-layer-group me-2"></i> Technology Architecture</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless text-muted small">
+                            <tbody>
+                            <tr>
+                                <td class="fw-bold text-dark" style="width: 130px;">Backend:</td>
+                                <td>Java 17+, Spring Boot 3, Spring Data JPA, Hibernate, Maven</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-dark">Database:</td>
+                                <td>MySQL / H2 (Embedded Engine with MySQL Dialect)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-dark">Security:</td>
+                                <td>Spring Security, BCrypt Password Hashing, Role-Based Access</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-dark">Audio Engine:</td>
+                                <td>JavaScript Web Audio API (Multi-Tone Synthesizer)</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-dark">Frontend:</td>
+                                <td>HTML5, CSS3, Bootstrap 5, Font Awesome 6, JavaScript ES6+</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
