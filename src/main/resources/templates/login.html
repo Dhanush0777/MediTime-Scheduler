@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Login – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card border-0 shadow-sm p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-teal-subtle text-primary d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-2" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-user-lock fa-xl"></i>
+                        </div>
+                        <h3 class="fw-bold">Welcome Back</h3>
+                        <p class="text-muted small">Sign in to your MediTime account</p>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div th:if="${param.error}" class="alert alert-danger py-2 small" role="alert">
+                        <i class="fa-solid fa-circle-exclamation me-1"></i> Invalid email or password.
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-success py-2 small" role="alert">
+                        <i class="fa-solid fa-circle-check me-1"></i> You have been logged out safely.
+                    </div>
+
+                    <form th:action="@{/login}" method="post" id="loginForm">
+                        <div class="mb-3">
+                            <label for="emailInput" class="form-label small fw-bold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-regular fa-envelope text-muted"></i></span>
+                                <input type="email" class="form-control" id="emailInput" name="email" placeholder="name@example.com" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="passwordInput" class="form-label small fw-bold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fa-solid fa-lock text-muted"></i></span>
+                                <input type="password" class="form-control" id="passwordInput" name="password" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary py-2 fw-semibold">
+                                <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Quick Demo Accounts 1-Click Buttons -->
+                    <div class="border-top pt-3 text-center">
+                        <span class="text-muted small d-block mb-2">⚡ 1-Click Demo Login</span>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="fillCredentials('dr.arun@meditime.com', 'password123')">
+                                <i class="fa-solid fa-user-doctor me-1"></i> Doctor (Dr. Arun)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success w-100" onclick="fillCredentials('rahul@meditime.com', 'password123')">
+                                <i class="fa-solid fa-user me-1"></i> Patient (Rahul)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Don't have an account?</span>
+                        <a th:href="@{/register}" class="small fw-semibold text-primary ms-1">Register here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fillCredentials(email, password) {
+            document.getElementById('emailInput').value = email;
+            document.getElementById('passwordInput').value = password;
+            document.getElementById('loginForm').submit();
+        }
+    </script>
+</div>
+</body>
+</html>
