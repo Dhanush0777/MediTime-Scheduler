@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Adherence Statistics – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="fa-solid fa-chart-pie text-primary me-2"></i>
+                    Medication Adherence & Statistics
+                </h2>
+                <p class="text-muted mb-0">Track compliance and consistency with your prescribed treatment schedules.</p>
+            </div>
+            <a th:href="@{/patient/dashboard}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+
+        <!-- Metric Big Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card p-4 border-primary-subtle bg-white shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted text-uppercase fw-bold small">Today's Adherence Rate</span>
+                        <span class="badge bg-teal-subtle text-primary border border-primary-subtle fs-6">Today</span>
+                    </div>
+                    <div class="d-flex align-items-baseline mb-3">
+                        <span class="display-4 fw-bold text-primary me-2" th:text="${stats.todayAdherencePercentage} + '%'">85.0%</span>
+                        <span class="text-muted small">compliance</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 12px;">
+                        <div class="progress-bar bg-primary" role="progressbar" th:style="'width: ' + ${stats.todayAdherencePercentage} + '%'"></div>
+                    </div>
+                    <div class="row text-center text-muted small pt-2 border-top">
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-dark fs-6" th:text="${stats.todayTotal}">3</span>
+                            Total Scheduled
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-success fs-6" th:text="${stats.todayTaken}">2</span>
+                            Taken
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-danger fs-6" th:text="${stats.todayMissed}">0</span>
+                            Missed
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card p-4 border-success-subtle bg-white shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted text-uppercase fw-bold small">Overall Treatment Adherence</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-6">All-Time</span>
+                    </div>
+                    <div class="d-flex align-items-baseline mb-3">
+                        <span class="display-4 fw-bold text-success me-2" th:text="${stats.overallAdherencePercentage} + '%'">92.5%</span>
+                        <span class="text-muted small">compliance</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 12px;">
+                        <div class="progress-bar bg-success" role="progressbar" th:style="'width: ' + ${stats.overallAdherencePercentage} + '%'"></div>
+                    </div>
+                    <div class="row text-center text-muted small pt-2 border-top">
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-dark fs-6" th:text="${stats.overallTotal}">15</span>
+                            Total Doses
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-success fs-6" th:text="${stats.overallTaken}">14</span>
+                            Taken
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold text-danger fs-6" th:text="${stats.overallMissed}">1</span>
+                            Missed
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7-Day Trend Breakdown Table -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header card-header-clean bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-chart-simple text-primary me-2"></i> Recent 7-Day Compliance History
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Date / Day</th>
+                            <th>Total Doses</th>
+                            <th>Taken</th>
+                            <th>Missed</th>
+                            <th>Pending</th>
+                            <th style="width: 250px;">Adherence %</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="day : ${stats.recentDays}">
+                            <td class="fw-bold text-dark" th:text="${day.dayLabel}">Mon, Aug 31</td>
+                            <td th:text="${day.total}">3</td>
+                            <td><span class="badge bg-success-subtle text-success" th:text="${day.taken} + ' Taken'">2 Taken</span></td>
+                            <td><span class="badge bg-danger-subtle text-danger" th:text="${day.missed} + ' Missed'">0 Missed</span></td>
+                            <td><span class="badge bg-info-subtle text-info" th:text="${day.pending} + ' Pending'">1 Pending</span></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" th:style="'width: ' + ${day.percentage} + '%'"></div>
+                                    </div>
+                                    <span class="fw-bold small" th:text="${day.percentage} + '%'">66.7%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formula and Explanations -->
+        <div class="card bg-light border-0 p-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-calculator text-primary me-1"></i> How Adherence is Calculated</h6>
+            <p class="text-muted small mb-0">
+                Adherence percentage reflects the ratio of successfully taken doses against total scheduled medication doses:
+                <br>
+                <code>Adherence % = (Taken Doses / Total Scheduled Doses) × 100</code>
+                <br>
+                Maintaining high adherence (>80%) ensures optimal therapeutic efficacy and prevents disease recurrence.
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
