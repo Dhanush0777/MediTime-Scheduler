@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Create Prescription – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="fa-solid fa-file-prescription text-primary me-2"></i> Create Prescription & Timetable</h2>
+                <p class="text-muted mb-0">Add medicines, specify meal relations and schedules to auto-generate the patient timetable.</p>
+            </div>
+            <a th:href="@{/doctor/dashboard}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <form id="prescriptionForm" onsubmit="submitPrescriptionForm(event)">
+            <div class="row g-4">
+                <!-- Left Column: Prescription & Medicine Form -->
+                <div class="col-lg-7">
+                    <!-- Prescription Info Card -->
+                    <div class="card mb-4">
+                        <div class="card-header card-header-clean fw-bold text-dark">
+                            <i class="fa-solid fa-user-tag text-primary me-2"></i> Patient & Treatment Details
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="patientSelect" class="form-label small fw-bold">Select Patient *</label>
+                                    <select class="form-select" id="patientSelect" required>
+                                        <option value="" disabled selected>-- Select a Patient --</option>
+                                        <option th:each="p : ${patients}" th:value="${p.id}"
+                                                th:text="${p.name} + ' (' + ${p.gender} + ', ' + ${p.age} + ' yrs)'">Rahul Sharma</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="diagnosis" class="form-label small fw-bold">Diagnosis / Medical Condition *</label>
+                                    <input type="text" class="form-control" id="diagnosis" placeholder="e.g. Acute Bronchitis & High Fever" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="startDate" class="form-label small fw-bold">Start Date *</label>
+                                    <input type="date" class="form-control" id="startDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="endDate" class="form-label small fw-bold">End Date *</label>
+                                    <input type="date" class="form-control" id="endDate" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="notes" class="form-label small fw-bold">Doctor Notes & Dietary Instructions</label>
+                                    <textarea class="form-control" id="notes" rows="2" placeholder="e.g. Take with warm water, avoid oily foods, ensure adequate rest."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medicines Section -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-pills text-primary me-2"></i> Prescribed Medicines</h5>
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="addMedicineRow()">
+                            <i class="fa-solid fa-plus me-1"></i> Add Another Medicine
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Medicine Rows Container -->
+                    <div id="medicineRowsContainer">
+                        <!-- Populated dynamically by prescription-form.js -->
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" id="btnSubmitPrescription" class="btn btn-success btn-lg py-3 fw-bold shadow-sm">
+                            <i class="fa-solid fa-check me-2"></i> Save Prescription & Generate Timetable
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Timetable Preview & Instructions -->
+                <div class="col-lg-5">
+                    <div class="card sticky-top" style="top: 85px; z-index: 10;">
+                        <div class="card-header card-header-clean bg-light d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark"><i class="fa-solid fa-calendar-day text-primary me-2"></i> Daily Timetable Preview</span>
+                            <span class="badge bg-primary">Auto-Generated</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="p-3 bg-light-subtle border-bottom small text-muted">
+                                <i class="fa-solid fa-circle-info me-1 text-primary"></i> As you add medicines and configure times, the patient's chronological daily reminder schedule updates automatically below.
+                            </div>
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-hover timetable-table mb-0 align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Medicine</th>
+                                        <th>Dosage</th>
+                                        <th>Meal</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="timetablePreviewTableBody">
+                                    <!-- Populated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white text-muted small">
+                            <i class="fa-solid fa-volume-high me-1 text-success"></i> Each timetable item will trigger an audible sound alarm for the patient at the exact scheduled time.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script for prescription form -->
+    <script th:src="@{/js/prescription-form.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 5);
+            const nextWeekStr = nextWeek.toISOString().split('T')[0];
+
+            document.getElementById('startDate').value = todayStr;
+            document.getElementById('endDate').value = nextWeekStr;
+
+            // Seed initial row with sample Paracetamol
+            addMedicineRow({
+                name: 'Paracetamol',
+                type: 'Tablet',
+                dosage: '500 mg',
+                frequency: '3 times per day',
+                duration: 5,
+                meal: 'After food',
+                special: 'Take with plenty of warm water',
+                times: ['08:00', '14:00', '20:00']
+            });
+
+            // Seed secondary row
+            addMedicineRow({
+                name: 'Amoxicillin',
+                type: 'Capsule',
+                dosage: '500 mg',
+                frequency: '2 times per day',
+                duration: 7,
+                meal: 'After food',
+                special: 'Complete full antibiotic course',
+                times: ['09:00', '21:00']
+            });
+        });
+    </script>
+</div>
+</body>
+</html>
