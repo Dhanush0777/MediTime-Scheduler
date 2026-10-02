@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Register – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card border-0 shadow-sm p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-teal-subtle text-primary d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-2" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-user-plus fa-xl"></i>
+                        </div>
+                        <h3 class="fw-bold">Create an Account</h3>
+                        <p class="text-muted small">Join MediTime to schedule prescriptions and set sound alarms</p>
+                    </div>
+
+                    <div id="registerAlert" class="alert d-none py-2 small" role="alert"></div>
+
+                    <form id="registerForm" onsubmit="handleRegistration(event)">
+                        <!-- Role Selector -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Select Account Role *</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="role" id="rolePatient" value="PATIENT" checked onchange="toggleRoleFields('PATIENT')">
+                                    <label class="btn btn-outline-primary w-100 py-2 fw-semibold" for="rolePatient">
+                                        <i class="fa-solid fa-user me-1"></i> Patient
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="role" id="roleDoctor" value="DOCTOR" onchange="toggleRoleFields('DOCTOR')">
+                                    <label class="btn btn-outline-primary w-100 py-2 fw-semibold" for="roleDoctor">
+                                        <i class="fa-solid fa-user-doctor me-1"></i> Doctor
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="regName" class="form-label small fw-bold">Full Name *</label>
+                                <input type="text" class="form-control" id="regName" placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="regEmail" class="form-label small fw-bold">Email Address *</label>
+                                <input type="email" class="form-control" id="regEmail" placeholder="name@example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="regPassword" class="form-label small fw-bold">Password *</label>
+                                <input type="password" class="form-control" id="regPassword" placeholder="Min. 6 characters" minlength="6" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="regPhone" class="form-label small fw-bold">Phone Number</label>
+                                <input type="tel" class="form-control" id="regPhone" placeholder="+91 98765 43210">
+                            </div>
+                        </div>
+
+                        <!-- Doctor Specific Fields -->
+                        <div id="doctorFields" class="d-none border-top pt-3 mb-3">
+                            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-stethoscope me-1"></i> Doctor Professional Details</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="regSpecialization" class="form-label small fw-bold">Specialization</label>
+                                    <input type="text" class="form-control" id="regSpecialization" placeholder="e.g. Cardiologist, General Physician">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="regLicense" class="form-label small fw-bold">Medical License Number</label>
+                                    <input type="text" class="form-control" id="regLicense" placeholder="e.g. MED-12345">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="regHospital" class="form-label small fw-bold">Hospital / Clinic</label>
+                                    <input type="text" class="form-control" id="regHospital" placeholder="e.g. City General Hospital">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="regQualification" class="form-label small fw-bold">Qualifications</label>
+                                    <input type="text" class="form-control" id="regQualification" placeholder="e.g. MBBS, MD">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Patient Specific Fields -->
+                        <div id="patientFields" class="border-top pt-3 mb-3">
+                            <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-id-card me-1"></i> Patient Health Information</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="regDob" class="form-label small fw-bold">Date of Birth</label>
+                                    <input type="date" class="form-control" id="regDob">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="regGender" class="form-label small fw-bold">Gender</label>
+                                    <select class="form-select" id="regGender">
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="regBloodGroup" class="form-label small fw-bold">Blood Group</label>
+                                    <select class="form-select" id="regBloodGroup">
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="regEmergency" class="form-label small fw-bold">Emergency Contact Phone</label>
+                                    <input type="tel" class="form-control" id="regEmergency" placeholder="+91 98765 00000">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="regAddress" class="form-label small fw-bold">Residential Address</label>
+                                    <input type="text" class="form-control" id="regAddress" placeholder="Street, City">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" id="btnRegisterSubmit" class="btn btn-primary py-2 fw-semibold">
+                                <i class="fa-solid fa-user-check me-1"></i> Register Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a th:href="@{/login}" class="small fw-semibold text-primary ms-1">Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleRoleFields(role) {
+            const docFields = document.getElementById('doctorFields');
+            const patFields = document.getElementById('patientFields');
+            if (role === 'DOCTOR') {
+                docFields.classList.remove('d-none');
+                patFields.classList.add('d-none');
+            } else {
+                docFields.classList.add('d-none');
+                patFields.classList.remove('d-none');
+            }
+        }
+
+        function handleRegistration(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('registerAlert');
+            const submitBtn = document.getElementById('btnRegisterSubmit');
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            const payload = {
+                name: document.getElementById('regName').value.trim(),
+                email: document.getElementById('regEmail').value.trim(),
+                password: document.getElementById('regPassword').value,
+                phone: document.getElementById('regPhone').value.trim(),
+                role: role,
+                specialization: document.getElementById('regSpecialization').value.trim(),
+                licenseNumber: document.getElementById('regLicense').value.trim(),
+                hospitalAffiliation: document.getElementById('regHospital').value.trim(),
+                qualification: document.getElementById('regQualification').value.trim(),
+                dateOfBirth: document.getElementById('regDob').value || null,
+                gender: document.getElementById('regGender').value,
+                bloodGroup: document.getElementById('regBloodGroup').value,
+                emergencyContact: document.getElementById('regEmergency').value.trim(),
+                address: document.getElementById('regAddress').value.trim()
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Registering...';
+
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alertBox.className = 'alert alert-success py-2 small';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i> Registration successful! Redirecting to login...';
+                    alertBox.classList.remove('d-none');
+                    setTimeout(() => window.location.href = '/login', 1500);
+                } else {
+                    alertBox.className = 'alert alert-danger py-2 small';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i> ' + (data.message || 'Registration failed');
+                    alertBox.classList.remove('d-none');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-user-check me-1"></i> Register Account';
+                }
+            })
+            .catch(err => {
+                alertBox.className = 'alert alert-danger py-2 small';
+                alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i> Connection error: ' + err.message;
+                alertBox.classList.remove('d-none');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-user-check me-1"></i> Register Account';
+            });
+        }
+    </script>
+</div>
+</body>
+</html>
