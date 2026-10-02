@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Medicine Timetable – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="fa-solid fa-calendar-days text-primary me-2"></i>
+                    Daily Medicine Timetable
+                </h2>
+                <p class="text-muted mb-0">Chronologically sorted timetable of all prescribed medicines.</p>
+            </div>
+            <!-- Quick Date Switcher -->
+            <div class="d-flex gap-2 align-items-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="shiftDate(-1)">
+                    <i class="fa-solid fa-chevron-left"></i> Prev Day
+                </button>
+                <input type="date" id="selectedDateInput" class="form-control form-control-sm" style="width: 150px;" th:value="${todayDate}" onchange="loadTimetableForDate(this.value)">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="shiftDate(1)">
+                    Next Day <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="setTodayDate()">
+                    Today
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Banner -->
+        <div class="card bg-white border-0 shadow-sm p-3 mb-4 d-flex flex-row justify-content-between align-items-center">
+            <div>
+                <span class="text-muted small text-uppercase fw-bold">Viewing Timetable For</span>
+                <h4 id="displayDateHeader" class="fw-bold text-primary mb-0">Today</h4>
+            </div>
+            <div id="daySummaryBadge" class="badge bg-teal-subtle text-primary border border-primary-subtle fs-6 px-3 py-2">
+                Loading...
+            </div>
+        </div>
+
+        <!-- Timetable Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover timetable-table align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th style="width: 140px;">Time</th>
+                            <th>Medicine Name</th>
+                            <th>Dosage & Form</th>
+                            <th>Meal Relation</th>
+                            <th>Status</th>
+                            <th class="text-end" style="width: 220px;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="timetableRows">
+                        <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date().toISOString().split('T')[0];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentDate = document.getElementById('selectedDateInput').value || currentDate;
+            loadTimetableForDate(currentDate);
+        });
+
+        function setTodayDate() {
+            currentDate = new Date().toISOString().split('T')[0];
+            document.getElementById('selectedDateInput').value = currentDate;
+            loadTimetableForDate(currentDate);
+        }
+
+        function shiftDate(offset) {
+            const d = new Date(currentDate);
+            d.setDate(d.getDate() + offset);
+            currentDate = d.toISOString().split('T')[0];
+            document.getElementById('selectedDateInput').value = currentDate;
+            loadTimetableForDate(currentDate);
+        }
+
+        function loadTimetableForDate(dateStr) {
+            currentDate = dateStr;
+            const header = document.getElementById('displayDateHeader');
+            const summaryBadge = document.getElementById('daySummaryBadge');
+            const tbody = document.getElementById('timetableRows');
+
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            header.textContent = dateObj.toLocaleDateString(undefined, options);
+
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2"></span> Loading timetable...</td></tr>`;
+
+            fetch(`/api/schedules/date/${dateStr}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.success && response.data) {
+                        const list = response.data;
+                        summaryBadge.textContent = `${list.length} Doses Scheduled`;
+
+                        if (list.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-5"><i class="fa-solid fa-calendar-xmark fs-2 d-block mb-2 text-secondary"></i>No medications scheduled for this date.</td></tr>`;
+                            return;
+                        }
+
+                        tbody.innerHTML = list.map(s => {
+                            let badgeHtml = '';
+                            let actionHtml = '';
+
+                            if (s.status === 'PENDING') {
+                                badgeHtml = `<span class="badge badge-status badge-status-pending"><i class="fa-solid fa-hourglass-start me-1"></i> Pending</span>`;
+                                actionHtml = `
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-success fw-semibold" onclick="window.reminderSystem.markTaken(${s.id}); setTimeout(() => loadTimetableForDate('${dateStr}'), 800)">
+                                            <i class="fa-solid fa-check me-1"></i> Taken
+                                        </button>
+                                        <button class="btn btn-outline-warning" onclick="window.reminderSystem.snooze(${s.id}, 10); setTimeout(() => loadTimetableForDate('${dateStr}'), 800)">
+                                            <i class="fa-regular fa-clock"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="window.reminderSystem.markMissed(${s.id}); setTimeout(() => loadTimetableForDate('${dateStr}'), 800)">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            } else if (s.status === 'TAKEN') {
+                                badgeHtml = `<span class="badge badge-status badge-status-taken"><i class="fa-solid fa-check me-1"></i> Taken</span>`;
+                                actionHtml = `<span class="text-success small fw-semibold"><i class="fa-solid fa-circle-check me-1"></i> Taken</span>`;
+                            } else if (s.status === 'MISSED') {
+                                badgeHtml = `<span class="badge badge-status badge-status-missed"><i class="fa-solid fa-xmark me-1"></i> Missed</span>`;
+                                actionHtml = `<span class="text-danger small fw-semibold"><i class="fa-solid fa-circle-xmark me-1"></i> Missed</span>`;
+                            } else if (s.status === 'SNOOZED') {
+                                badgeHtml = `<span class="badge badge-status badge-status-snoozed"><i class="fa-regular fa-clock me-1"></i> Snoozed</span>`;
+                                actionHtml = `
+                                    <button class="btn btn-sm btn-success fw-semibold" onclick="window.reminderSystem.markTaken(${s.id}); setTimeout(() => loadTimetableForDate('${dateStr}'), 800)">
+                                        <i class="fa-solid fa-check me-1"></i> Mark Taken
+                                    </button>
+                                `;
+                            }
+
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="timetable-time"><i class="fa-regular fa-clock me-1"></i>${s.scheduledTimeFormatted || s.scheduledTime}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">${s.medicineName}</div>
+                                        <span class="text-muted small">${s.specialInstruction || 'As prescribed'}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border me-1">${s.dosage}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary">${s.medicineType}</span>
+                                    </td>
+                                    <td><span class="text-primary fw-semibold">${s.mealInstruction}</span></td>
+                                    <td>${badgeHtml}</td>
+                                    <td class="text-end">${actionHtml}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                })
+                .catch(err => {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error loading timetable: ${err.message}</td></tr>`;
+                });
+        }
+    </script>
+</div>
+</body>
+</html>
