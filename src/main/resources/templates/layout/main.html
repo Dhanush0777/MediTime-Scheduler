@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">MediTime – Smart Medicine Scheduler</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Medical Safety Requirement Disclaimer Banner -->
+<div class="medical-disclaimer-banner text-center">
+    <div class="container-fluid px-3">
+        <i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>
+        <strong>Medical Notice:</strong> Medication schedules shown by this application are based on the entered prescription. Do not change dosage or medication without consulting a qualified healthcare professional.
+    </div>
+</div>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+            <i class="fa-solid fa-heart-pulse fa-lg text-primary me-2"></i>
+            <span>MediTime</span>
+            <span class="badge bg-teal-subtle text-primary border border-primary-subtle ms-2 fs-6 fw-normal d-none d-sm-inline">Smart Scheduler</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Public Links -->
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/}"><i class="fa-solid fa-house me-1"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/about}"><i class="fa-solid fa-circle-info me-1"></i> About & Safety</a>
+                </li>
+
+                <!-- Doctor Navigation -->
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/dashboard}"><i class="fa-solid fa-gauge me-1"></i> Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/prescriptions/new}"><i class="fa-solid fa-file-prescription me-1"></i> New Prescription</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/prescriptions}"><i class="fa-solid fa-list-check me-1"></i> Prescriptions</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('DOCTOR')">
+                    <a class="nav-link" th:href="@{/doctor/patients}"><i class="fa-solid fa-users me-1"></i> Patients</a>
+                </li>
+
+                <!-- Patient Navigation -->
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/dashboard}"><i class="fa-solid fa-gauge me-1"></i> Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/timetable}"><i class="fa-solid fa-calendar-days me-1"></i> Timetable</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/history}"><i class="fa-solid fa-clock-rotate-left me-1"></i> History</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/statistics}"><i class="fa-solid fa-chart-pie me-1"></i> Adherence</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('PATIENT')">
+                    <a class="nav-link" th:href="@{/patient/settings}"><i class="fa-solid fa-sliders me-1"></i> Reminders</a>
+                </li>
+            </ul>
+
+            <!-- Right Controls / Auth -->
+            <ul class="navbar-nav ms-auto align-items-center">
+                <!-- Patient Audio Status Button -->
+                <li class="nav-item me-3" sec:authorize="hasRole('PATIENT')">
+                    <button id="btnEnableAudio" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Click to ensure browser audio permission for medicine alarms">
+                        <i class="fa-solid fa-volume-high me-1"></i> Enable Sound Reminders
+                    </button>
+                </li>
+
+                <!-- Authenticated User Dropdown -->
+                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        <span class="avatar-circle me-2 bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                            <i class="fa-solid fa-user-doctor" sec:authorize="hasRole('DOCTOR')"></i>
+                            <i class="fa-solid fa-user" sec:authorize="hasRole('PATIENT')"></i>
+                        </span>
+                        <span sec:authentication="name" class="fw-semibold">User</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li sec:authorize="hasRole('PATIENT')">
+                            <a class="dropdown-item" th:href="@{/patient/profile}"><i class="fa-solid fa-id-card me-2"></i> My Profile</a>
+                        </li>
+                        <li sec:authorize="hasRole('PATIENT')">
+                            <a class="dropdown-item" th:href="@{/patient/settings}"><i class="fa-solid fa-gear me-2"></i> Reminder Settings</a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="m-0">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Guest Login / Register -->
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-outline-primary btn-sm me-2" th:href="@{/login}"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Login</a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-primary btn-sm" th:href="@{/register}"><i class="fa-solid fa-user-plus me-1"></i> Register</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Page Content -->
+<main class="py-4">
+    <div th:replace="${content}"></div>
+</main>
+
+<!-- LOUD MEDICINE REMINDER MODAL (Real-time Browser Alarm Popup for Patients) -->
+<div sec:authorize="hasRole('PATIENT')" class="modal fade" id="medicineAlarmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="medicineAlarmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-danger alarm-ringing-card">
+            <div class="modal-header modal-alarm-header text-white">
+                <h5 class="modal-title fw-bold" id="medicineAlarmModalLabel">
+                    <i class="fa-solid fa-bell fa-shake me-2"></i> MEDICINE REMINDER
+                </h5>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="mb-3">
+                    <span class="display-4 text-danger alarm-icon-bounce d-inline-block">
+                        <i class="fa-solid fa-capsules"></i>
+                    </span>
+                </div>
+
+                <h6 class="text-muted text-uppercase tracking-wider mb-1">Time to take your dose</h6>
+                <h2 id="modalMedName" class="fw-bold text-dark mb-1">Paracetamol</h2>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <span id="modalMedDosage" class="badge bg-primary fs-6">500 mg</span>
+                    <span id="modalMedType" class="badge bg-secondary fs-6">Tablet</span>
+                </div>
+
+                <div class="card bg-light border-0 p-3 mb-3 text-start">
+                    <div class="row">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Scheduled Time:</span>
+                            <span id="modalScheduledTime" class="fw-bold text-primary fs-5">08:00 AM</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Meal Instruction:</span>
+                            <span id="modalMealInstruction" class="fw-bold text-dark">After food</span>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <span class="text-muted small d-block">Special Instruction:</span>
+                            <span id="modalSpecialInstruction" class="text-secondary small">Take with a full glass of warm water</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning py-1 px-2 small mb-4">
+                    <i class="fa-solid fa-volume-high me-1"></i> Sound alarm will repeat until you take action.
+                </div>
+
+                <!-- Primary Action Buttons -->
+                <div class="d-grid gap-2">
+                    <button type="button" id="btnModalTaken" class="btn btn-success btn-lg fw-bold py-3 shadow-sm">
+                        <i class="fa-solid fa-check-double me-2"></i> STOP & MARK TAKEN
+                    </button>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" id="btnModalSnoozeDefault" class="btn btn-outline-warning w-100 py-2 fw-semibold">
+                                <i class="fa-regular fa-clock me-1"></i> Snooze 10 Min
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" id="btnModalMissed" class="btn btn-outline-danger w-100 py-2 fw-semibold">
+                                <i class="fa-solid fa-xmark me-1"></i> Mark Missed
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="py-4">
+    <div class="container text-center">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-md-start mb-2 mb-md-0">
+                <span class="fw-bold text-primary"><i class="fa-solid fa-heart-pulse me-1"></i> MediTime</span> – Smart Medicine Scheduler & Sound Reminder System
+            </div>
+            <div class="col-md-6 text-md-end">
+                <span class="text-muted small">Java Spring Boot &amp; Web Audio API • Full-Stack Healthcare Solution</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<th:block sec:authorize="hasRole('PATIENT')">
+    <script th:src="@{/js/sound-engine.js}"></script>
+    <script th:src="@{/js/reminder-system.js}"></script>
+</th:block>
+</body>
+</html>
