@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Medication History – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>
+                    Medication History Log
+                </h2>
+                <p class="text-muted mb-0">Complete historical record of all prescribed doses, taken timestamps, and missed medicines.</p>
+            </div>
+            <a th:href="@{/patient/dashboard}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+
+        <!-- History Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Scheduled Time</th>
+                            <th>Medicine</th>
+                            <th>Dosage & Meal</th>
+                            <th>Status</th>
+                            <th>Actual Taken Time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="h : ${history}">
+                            <td class="fw-bold text-dark" th:text="${h.scheduledDate}">2026-08-28</td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${h.scheduledTimeFormatted}">08:00 AM</span>
+                            </td>
+                            <td>
+                                <strong th:text="${h.medicineName}">Paracetamol</strong>
+                                <span class="text-muted small d-block" th:text="${h.medicineType}">Tablet</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border me-1" th:text="${h.dosage}">500 mg</span>
+                                <span class="small text-muted" th:text="${h.mealInstruction}">After food</span>
+                            </td>
+                            <td>
+                                <span th:if="${h.status.name() == 'TAKEN'}" class="badge badge-status badge-status-taken"><i class="fa-solid fa-check me-1"></i> Taken</span>
+                                <span th:if="${h.status.name() == 'MISSED'}" class="badge badge-status badge-status-missed"><i class="fa-solid fa-xmark me-1"></i> Missed</span>
+                                <span th:if="${h.status.name() == 'PENDING'}" class="badge badge-status badge-status-pending"><i class="fa-solid fa-hourglass-start me-1"></i> Pending</span>
+                                <span th:if="${h.status.name() == 'SNOOZED'}" class="badge badge-status badge-status-snoozed"><i class="fa-regular fa-clock me-1"></i> Snoozed</span>
+                            </td>
+                            <td>
+                                <span th:if="${h.takenAt != null}" class="text-success small fw-semibold">
+                                    <i class="fa-regular fa-clock me-1"></i> <span th:text="${#temporals.format(h.takenAt, 'hh:mm a, dd MMM')}">08:05 AM, 28 Aug</span>
+                                </span>
+                                <span th:if="${h.takenAt == null and h.status.name() == 'MISSED'}" class="text-danger small">
+                                    Missed
+                                </span>
+                                <span th:if="${h.takenAt == null and h.status.name() != 'MISSED'}" class="text-muted small">
+                                    --
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(history)}">
+                            <td colspan="6" class="text-center text-muted py-4">No medication history recorded yet.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
