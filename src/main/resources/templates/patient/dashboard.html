@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Patient Dashboard – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Welcome & Audio Status Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="fa-solid fa-house-medical text-primary me-2"></i>
+                    Hello, <span th:text="${patient.name}">Rahul</span>!
+                </h2>
+                <p class="text-muted mb-0">Here is your medicine schedule and sound reminder status for today.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span id="audioStatusIndicator" class="badge bg-warning text-dark audio-status-pill d-flex align-items-center">
+                    <i class="fa-solid fa-volume-high me-1"></i> Sound Alarms Active
+                </span>
+                <a th:href="@{/patient/settings}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-sliders me-1"></i> Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Next Dose Banner with LIVE Countdown -->
+        <div class="next-dose-banner mb-4" th:if="${nextDose != null}">
+            <div class="row align-items-center">
+                <div class="col-lg-7 mb-3 mb-lg-0">
+                    <span class="badge bg-white text-primary fw-bold px-3 py-1 rounded-pill mb-2">
+                        <i class="fa-solid fa-bell fa-shake me-1"></i> Next Upcoming Dose
+                    </span>
+                    <h2 class="fw-bold mb-1" th:text="${nextDose.medicineName} + ' ' + ${nextDose.dosage}">Paracetamol 500 mg</h2>
+                    <p class="mb-2 opacity-90">
+                        <i class="fa-regular fa-clock me-1"></i> Scheduled for <strong th:text="${nextDose.scheduledTimeFormatted}">08:00 PM</strong> •
+                        <i class="fa-solid fa-utensils ms-2 me-1"></i> <span th:text="${nextDose.mealInstruction}">After food</span>
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <button class="btn btn-light btn-sm text-primary fw-bold px-3" th:onclick="'window.reminderSystem.markTaken(' + ${nextDose.id} + ')'">
+                            <i class="fa-solid fa-check me-1"></i> Mark as Taken Now
+                        </button>
+                        <button class="btn btn-outline-light btn-sm px-3" th:onclick="'window.reminderSystem.snooze(' + ${nextDose.id} + ', 10)'">
+                            <i class="fa-regular fa-clock me-1"></i> Snooze 10m
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-lg-end">
+                    <span class="d-block small text-white-50 text-uppercase fw-bold mb-1">Time Remaining</span>
+                    <div class="countdown-clock text-white" id="nextDoseCountdown">
+                        --:--:--
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- If no pending dose -->
+        <div class="card bg-success-subtle border-success-subtle p-4 mb-4" th:if="${nextDose == null}">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-circle-check text-success fs-1 me-3"></i>
+                <div>
+                    <h5 class="fw-bold text-success mb-1">All Doses Completed!</h5>
+                    <p class="mb-0 text-muted small">You have completed all scheduled medications for today. Great job keeping up with your health!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adherence Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <div class="card stat-card bg-white border-primary-subtle">
+                    <div class="stat-icon text-primary"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="stat-label">Today's Doses</div>
+                    <div class="stat-value text-primary" th:text="${stats.todayTotal}">3</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card bg-white border-success-subtle">
+                    <div class="stat-icon text-success"><i class="fa-solid fa-check-double"></i></div>
+                    <div class="stat-label">Taken</div>
+                    <div class="stat-value text-success" th:text="${stats.todayTaken}">2</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card bg-white border-warning-subtle">
+                    <div class="stat-icon text-warning"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="stat-label">Pending / Snoozed</div>
+                    <div class="stat-value text-warning" th:text="${stats.todayPending}">1</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card stat-card bg-white border-info-subtle">
+                    <div class="stat-icon text-info"><i class="fa-solid fa-percent"></i></div>
+                    <div class="stat-label">Today's Adherence</div>
+                    <div class="stat-value text-info" th:text="${stats.todayAdherencePercentage} + '%'">85%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Medicine Timetable List -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header card-header-clean bg-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-clock text-primary me-2"></i> Today's Medicine Timetable
+                </h5>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/patient/timetable}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa-solid fa-calendar-days me-1"></i> Full Calendar Timetable
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover timetable-table align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th style="width: 130px;">Time</th>
+                            <th>Medicine</th>
+                            <th>Dosage & Type</th>
+                            <th>Meal Instruction</th>
+                            <th>Status</th>
+                            <th class="text-end" style="width: 220px;">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="s : ${todaySchedules}" th:classappend="${s.status.name() == 'TAKEN' ? 'table-success-subtle' : ''}">
+                            <td>
+                                <div class="timetable-time">
+                                    <i class="fa-regular fa-clock me-1"></i>
+                                    <span th:text="${s.scheduledTimeFormatted}">08:00 AM</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${s.medicineName}">Paracetamol</div>
+                                <div class="text-muted small" th:if="${s.specialInstruction != null and !s.specialInstruction.isEmpty()}" th:text="${s.specialInstruction}">Take with water</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border me-1" th:text="${s.dosage}">500 mg</span>
+                                <span class="badge bg-secondary-subtle text-secondary" th:text="${s.medicineType}">Tablet</span>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-primary" th:text="${s.mealInstruction}">After food</span>
+                            </td>
+                            <td>
+                                <span th:if="${s.status.name() == 'PENDING'}" class="badge badge-status badge-status-pending"><i class="fa-solid fa-hourglass-start me-1"></i> Pending</span>
+                                <span th:if="${s.status.name() == 'TAKEN'}" class="badge badge-status badge-status-taken"><i class="fa-solid fa-check me-1"></i> Taken</span>
+                                <span th:if="${s.status.name() == 'MISSED'}" class="badge badge-status badge-status-missed"><i class="fa-solid fa-xmark me-1"></i> Missed</span>
+                                <span th:if="${s.status.name() == 'SNOOZED'}" class="badge badge-status badge-status-snoozed"><i class="fa-regular fa-clock me-1"></i> Snoozed</span>
+                            </td>
+                            <td class="text-end">
+                                <div th:if="${s.status.name() == 'PENDING' or s.status.name() == 'SNOOZED'}" class="btn-group btn-group-sm">
+                                    <button class="btn btn-success fw-semibold" th:onclick="'window.reminderSystem.markTaken(' + ${s.id} + ')'" title="Mark Taken">
+                                        <i class="fa-solid fa-check me-1"></i> Taken
+                                    </button>
+                                    <button class="btn btn-outline-warning" th:onclick="'window.reminderSystem.snooze(' + ${s.id} + ', 10)'" title="Snooze 10 Minutes">
+                                        <i class="fa-regular fa-clock"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" th:onclick="'window.reminderSystem.markMissed(' + ${s.id} + ')'" title="Mark Missed">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <span th:if="${s.status.name() == 'TAKEN'}" class="text-success small fw-semibold">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Taken
+                                </span>
+                                <span th:if="${s.status.name() == 'MISSED'}" class="text-danger small fw-semibold">
+                                    <i class="fa-solid fa-circle-xmark me-1"></i> Missed
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(todaySchedules)}">
+                            <td colspan="6" class="text-center text-muted py-4">No medicines scheduled for today.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a th:href="@{/patient/timetable}" class="card card-hover text-decoration-none text-dark p-3 text-center border-primary-subtle">
+                    <i class="fa-solid fa-calendar-days fs-2 text-primary mb-2"></i>
+                    <h6 class="fw-bold mb-1">View Full Timetable</h6>
+                    <span class="text-muted small">Inspect tomorrow and upcoming days</span>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a th:href="@{/patient/history}" class="card card-hover text-decoration-none text-dark p-3 text-center border-success-subtle">
+                    <i class="fa-solid fa-clock-rotate-left fs-2 text-success mb-2"></i>
+                    <h6 class="fw-bold mb-1">Medication History</h6>
+                    <span class="text-muted small">View all past taken and missed records</span>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a th:href="@{/patient/settings}" class="card card-hover text-decoration-none text-dark p-3 text-center border-warning-subtle">
+                    <i class="fa-solid fa-volume-high fs-2 text-warning mb-2"></i>
+                    <h6 class="fw-bold mb-1">Sound Reminder Settings</h6>
+                    <span class="text-muted small">Customize alarms, volume and snooze</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
