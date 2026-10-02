@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Patient Profile – MediTime</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="fa-solid fa-id-card text-primary me-2"></i>
+                    Patient Profile
+                </h2>
+                <p class="text-muted mb-0">Personal details and active prescriptions.</p>
+            </div>
+            <a th:href="@{/patient/dashboard}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Profile Info Card -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm p-4">
+                    <div class="text-center mb-4 pb-3 border-bottom">
+                        <div class="bg-teal-subtle text-primary d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-2" style="width: 70px; height: 70px;">
+                            <i class="fa-solid fa-user-injured fa-2xl"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" th:text="${patient.name}">Rahul Sharma</h4>
+                        <span class="badge bg-primary px-3 py-1">Patient</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Email:</span>
+                            <span class="fw-semibold" th:text="${patient.email}">rahul@meditime.com</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Phone:</span>
+                            <span class="fw-semibold" th:text="${patient.phone}">+91 98765 12345</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Date of Birth / Age:</span>
+                            <span class="fw-semibold" th:text="${patient.dateOfBirth} + ' (' + ${patient.age} + ' yrs)'">1996-05-14 (29 yrs)</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Gender:</span>
+                            <span class="fw-semibold" th:text="${patient.gender}">Male</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Blood Group:</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle" th:text="${patient.bloodGroup}">B+</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Emergency Contact:</span>
+                            <span class="fw-semibold" th:text="${patient.emergencyContact}">+91 98765 99999</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted small">Address:</span>
+                            <span class="text-end small" th:text="${patient.address}">Indiranagar, Bengaluru</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted small">Overall Adherence:</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fs-6" th:text="${patient.overallAdherence} + '%'">85.0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prescriptions on record -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header card-header-clean bg-white py-3">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="fa-solid fa-file-medical text-primary me-2"></i> Prescriptions on File
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Diagnosis</th>
+                                    <th>Period</th>
+                                    <th>Medicines</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="rx : ${prescriptions}">
+                                    <td>
+                                        <div class="fw-semibold" th:text="${rx.doctorName}">Dr. Arun Verma</div>
+                                        <span class="text-muted small" th:text="${rx.doctorSpecialization}">Cardiologist</span>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${rx.diagnosis}">Infection</strong>
+                                    </td>
+                                    <td>
+                                        <span class="small" th:text="${rx.startDate} + ' to ' + ${rx.endDate}">2026-08-28 to 2026-09-04</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span th:each="m : ${rx.medicines}" class="badge bg-teal-subtle text-primary border border-primary-subtle" th:text="${m.medicineName}">Paracetamol</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
